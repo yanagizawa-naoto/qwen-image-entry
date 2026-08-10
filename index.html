@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; connect-src https://api.github.com https://*.trycloudflare.com; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+        content="default-src 'none'; connect-src https://api.github.com; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
   <title>Qwen Image Studioへ接続中</title>
   <style>
     :root { color-scheme: dark; font-family: system-ui, sans-serif; }
@@ -42,10 +42,6 @@
         if (!/^https:\/\/[-a-z0-9]+\.trycloudflare\.com$/.test(target)) {
           throw new Error('Invalid target URL');
         }
-        // Stay on this stable page while the GPU server is powered off. A
-        // no-cors probe only checks network reachability and does not forward
-        // application credentials or expose the protected response body.
-        await fetch(target, { mode: 'no-cors', cache: 'no-store' });
         statusNode.textContent = '画像生成サーバーへ移動します。';
         manualNode.href = target;
         manualNode.hidden = false;
