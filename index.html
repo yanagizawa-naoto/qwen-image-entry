@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; connect-src https://api.github.com; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <title>Qwen Image Studioへ接続中</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    body { display: grid; min-height: 100vh; margin: 0; place-items: center; background: #101114; }
+    main { width: min(34rem, calc(100% - 3rem)); padding: 2rem; border: 1px solid #30333a; border-radius: 1rem; background: #181a1f; }
+    h1 { margin-top: 0; font-size: 1.35rem; }
+    p { color: #c6cad3; line-height: 1.6; }
+    a { color: #8ab4ff; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Qwen Image Studioへ接続中</h1>
+    <p id="status">現在のサーバーURLを確認しています。</p>
+    <p><a id="manual" hidden>自動的に移動しない場合はこちら</a></p>
+  </main>
+  <script>
+    const contentsApi = 'https://api.github.com/repos/yanagizawa-naoto/qwen-image-entry/contents/target.json?ref=main';
+    const statusNode = document.getElementById('status');
+    const manualNode = document.getElementById('manual');
+
+    async function resolveTarget() {
+      try {
+        const response = await fetch(`${contentsApi}&cache=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { Accept: 'application/vnd.github+json' },
+        });
+        if (!response.ok) throw new Error(`GitHub API ${response.status}`);
+        const file = await response.json();
+        const decoded = new TextDecoder().decode(
+          Uint8Array.from(atob(file.content.replace(/\s/g, '')), char => char.charCodeAt(0)),
+        );
+        const target = JSON.parse(decoded).url;
+        if (!/^https:\/\/[-a-z0-9]+\.trycloudflare\.com$/.test(target)) {
+          throw new Error('Invalid target URL');
+        }
+        statusNode.textContent = '画像生成サーバーへ移動します。';
+        manualNode.href = target;
+        manualNode.hidden = false;
+        window.location.replace(target);
+      } catch (error) {
+        statusNode.textContent = 'サーバーが起動中です。5秒後にもう一度確認します。';
+        setTimeout(resolveTarget, 5000);
+      }
+    }
+
+    resolveTarget();
+  </script>
+</body>
+</html>
