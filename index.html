@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; connect-src https://api.github.com; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+        content="default-src 'none'; connect-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
   <title>Qwen Image Studioへ接続中</title>
   <style>
     :root { color-scheme: dark; font-family: system-ui, sans-serif; }
@@ -23,22 +23,17 @@
     <p><a id="manual" hidden>自動的に移動しない場合はこちら</a></p>
   </main>
   <script>
-    const contentsApi = 'https://api.github.com/repos/yanagizawa-naoto/qwen-image-entry/contents/target.json?ref=main';
+    const targetDocument = './target.json';
     const statusNode = document.getElementById('status');
     const manualNode = document.getElementById('manual');
 
     async function resolveTarget() {
       try {
-        const response = await fetch(`${contentsApi}&cache=${Date.now()}`, {
+        const response = await fetch(`${targetDocument}?cache=${Date.now()}`, {
           cache: 'no-store',
-          headers: { Accept: 'application/vnd.github+json' },
         });
-        if (!response.ok) throw new Error(`GitHub API ${response.status}`);
-        const file = await response.json();
-        const decoded = new TextDecoder().decode(
-          Uint8Array.from(atob(file.content.replace(/\s/g, '')), char => char.charCodeAt(0)),
-        );
-        const target = JSON.parse(decoded).url;
+        if (!response.ok) throw new Error(`Target document ${response.status}`);
+        const target = (await response.json()).url;
         if (!/^https:\/\/[-a-z0-9]+\.trycloudflare\.com$/.test(target)) {
           throw new Error('Invalid target URL');
         }
